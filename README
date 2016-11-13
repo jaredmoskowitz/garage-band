@@ -1,0 +1,18 @@
+Jared Moskowitz
+10/18/16
+7 hours
+No one, however I did accidentaly see a solution on creating a barrier class
+in Python. I was looking for the Barrier class and found it for Python 3. I went
+to look for something similiar in Python 2 and the answer was there and short,
+so very hard to not see it and figure out the answer from it.
+
+Instructions for running:
+USGAE: ./rockband.py [music text file]
+
+The music text files should look like the ones provided. The sound files
+must be located in a directory called "media" that is in the same directory
+as rockband.py. When running the above command, you should start to hear
+music.
+
+p.s. I tried making Piano Man. Tab credit below:
+https://tabs.ultimate-guitar.com/b/billy_joel/piano_man_tab.htm
