@@ -73,28 +73,6 @@ def main(args):
     instruments = create_instruments(sources, tabs)
     active_instrument_count = len(instruments)
 
-
-    @window.event
-    def on_draw():
-        window.clear()
-        label.draw()
-
-    @window.event
-    def on_key_press(symbol, modifiers):
-        if symbol == key.A:
-            print 'The "A" key was pressed.'
-        elif symbol == key.LEFT:
-            print 'The left arrow key was pressed.'
-        elif symbol == key.ENTER:
-            print 'The enter key was pressed.'
-
-
-    @window.event
-    def on_mouse_press(x, y, button, modifiers):
-        if button == mouse.LEFT:
-            print 'The left mouse button was pressed.'
-
-    pyglet.app.run()
     play()
 
 def read_input(filepath):
