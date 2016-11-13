@@ -20,14 +20,6 @@ instruments = []
 active_instrument_count = 0 # # of instruments planning to play their next note
 barrier = None
 
-window = pyglet.window.Window()
-
-label = pyglet.text.Label('Hello, world',
-                          font_name='Times New Roman',
-                          font_size=36,
-                          x=window.width//2, y=window.height//2,
-                          anchor_x='center', anchor_y='center')
-
 class Instrument:
     """
     Owns a source, tabulatur (string), and a player
@@ -146,8 +138,6 @@ def play():
         queue_next_sounds(note_index)
         asynchonrously_play_next_note()
         note_index += 1 # iterate through the notes
-    play()
-
 
 def asynchonrously_play_next_note():
     """
@@ -179,6 +169,39 @@ def play_sound(index):
     barrier.wait()
     instruments[index].player.play()
     time.sleep(0.15)
+
+def pause():
+    """
+    Pause the music until resume is pushed
+    """
+    return None
+
+def resume():
+    """
+    Play the music if already paused.
+    If already resumed then no action will be taken
+    """
+    return None
+
+def write_note(instrument, pitch):
+    """
+    Changes given instrument to given pitch for current index
+    in tab
+    """
+    return None
+
+def stop():
+    """
+    Stops the music.
+    """
+    return None
+
+def save(filename):
+    """
+    saves current tab to text file in given filename
+    """
+    return None
+
 
 if __name__ == '__main__':
     main(sys.argv)
