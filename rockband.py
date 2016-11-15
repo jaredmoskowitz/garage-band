@@ -24,12 +24,16 @@ class Instrument:
     """
     Owns a source, tabulatur (string), and a player
     """
-    def __init__(self, source, tab):
-        self.source = source
+    def __init__(self, source_path, tab):
+        self.source_path = source_path
+        self.source = media.load(source_path, streaming=False)
         self.tab = tab
         self.player = media.Player()
         self.player.eos_action = media.Player.EOS_PAUSE
         self.player.queue(self.source)
+
+    def __str__(self):
+        return self.source_path + " " + self.tab
 
 class Barrier:
     """
@@ -50,6 +54,7 @@ class Barrier:
         self.barrier.acquire()
         self.barrier.release()
 
+
 def main(args):
     global active_instrument_count, instruments
 
@@ -65,6 +70,9 @@ def main(args):
     instruments = create_instruments(sources, tabs)
     active_instrument_count = len(instruments)
 
+    print "OUTPUT"
+    output()
+
     play()
 
 def read_input(filepath):
@@ -76,22 +84,9 @@ def read_input(filepath):
     with open(filepath) as f:
         for line in f:
             temp = line.split(" ")
-            sources.append(add_source(temp[0]))
-            tabs.append(add_tab(temp[1]))
+            sources.append(temp[0])
+            tabs.append(temp[1].replace('|', ''))
     return sources, tabs
-
-def add_source(source_path):
-    """
-    create a source given a string path to the audio file
-    """
-    return media.load(source_path, streaming=False)
-
-def add_tab(tab_input):
-    """
-    parse the tab_input to create a tab the program can understand
-    """
-    global string_tabs
-    return tab_input.replace('|', '')
 
 def create_instruments(sources, tabs):
     """
@@ -202,6 +197,14 @@ def save(filename):
     """
     return None
 
+def get_sheet_music():
+    sheet = ""
+    for instrument in instruments:
+        sheet += str(instrument) + "\n"
+    return sheet
+
+def output():
+    print get_sheet_music()
 
 if __name__ == '__main__':
     main(sys.argv)
