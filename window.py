@@ -28,6 +28,7 @@ class GarageBand(pyglet.window.Window):
                                                anchor_y='center')]
 
                 self.label_count = 0
+                self.font_size_pix = 22
                 self.func = func
                 self.schedule = pyglet.clock.schedule_interval(
                                 func = self.update,
@@ -61,7 +62,7 @@ class GarageBand(pyglet.window.Window):
                 self.func = func
 
         def __inst_spot(self):
-                return self.label_count * 22
+                return self.label_count * self.font_size_pix 
 
         def add_inst(self, instr):
                 """
@@ -71,7 +72,6 @@ class GarageBand(pyglet.window.Window):
                 new_label = pyglet.text.Label(instr.tostring(),
                                               font_name = 'Times New Roman',
                                               font_size = 16,
-                                              #Need work
                                               x=10,
                                               y=self.height-self.__inst_spot())
                 self.label.append(new_label)
