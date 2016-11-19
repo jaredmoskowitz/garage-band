@@ -9,7 +9,7 @@ COMP 50: Concurrent Programming
 This program plays the given instrument tablature concurrently
 
 """
-import pyglet, sys, threading, time
+import pyglet, sys, threading, time, Queue
 from threading import Semaphore
 from pyglet import media
 from pyglet.window import key
@@ -19,6 +19,7 @@ from pyglet.window import mouse
 instruments = []
 active_instrument_count = 0 # # of instruments planning to play their next note
 barrier = None
+write_queue = Queue.Queue()
 
 class Instrument:
     """
@@ -70,8 +71,6 @@ def main(args):
     instruments = create_instruments(sources, tabs)
     active_instrument_count = len(instruments)
 
-    print "OUTPUT"
-    output()
 
     play()
 
@@ -83,7 +82,8 @@ def read_input(filepath):
     tabs = list()
     with open(filepath) as f:
         for line in f:
-            temp = line.split(" ")
+            temp = line.strip().split(" ")
+            print temp
             sources.append(temp[0])
             tabs.append(temp[1].replace('|', ''))
     return sources, tabs
@@ -132,13 +132,16 @@ def play():
         barrier = Barrier(active_instrument_count)
         queue_next_sounds(note_index)
         asynchonrously_play_next_note()
+        write_music(note_index)
+
         note_index += 1 # iterate through the notes
+        output()
 
 def asynchonrously_play_next_note():
     """
         Call the instruments so they all play their next note at the same time
     """
-    global instruments
+    global instruments, write_queue
     threads = list()
     for i, instrument in enumerate(instruments):
         if instrument.player is not None:
@@ -154,6 +157,19 @@ def asynchonrously_play_next_note():
     for instrument in instruments:
         if instrument is not None:
             instrument.player.seek(0.0)
+
+def write_music(note_index):
+    global instruments
+    write_note(instruments[2], float(note_index))
+
+    while(not write_queue.empty()):
+        (instrument, pitch) = write_queue.get()
+        index = instruments.index(instrument)
+        instruments[index].player.pitch = shift_pitch(pitch)
+        print instruments[index].tab[note_index]
+        tab = list(instruments[index].tab)
+        tab[note_index] = str(int(pitch))
+        instruments[index].tab = ''.join(tab)
 
 def play_sound(index):
     """
@@ -183,7 +199,8 @@ def write_note(instrument, pitch):
     Changes given instrument to given pitch for current index
     in tab
     """
-    return None
+    global write_queue
+    write_queue.put((instrument, pitch))
 
 def stop():
     """

@@ -4,5 +4,3 @@
 ./media/3rd_String_G_64kb.wav x0xx0xx0x0x2x4xxx2xxxx0xxxx0xx0xxxxxxxxxxxx
 ./media/2nd_String_B_64kb.wav xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ./media/1st_String_E_64kb.wav xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-
