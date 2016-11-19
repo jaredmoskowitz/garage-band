@@ -15,7 +15,7 @@ class GarageBand(pyglet.window.Window):
         def __init__(self, func=None):
                 """
                 Sets up the window.  Also sets the initial label that will
-                be used and schedules the update method to fire every 
+                be used and schedules the update method to fire every
                 60th of a second
                 """
                 pyglet.window.Window.__init__(self, width=500, height=500)
@@ -62,7 +62,7 @@ class GarageBand(pyglet.window.Window):
                 self.func = func
 
         def __inst_spot(self):
-                return self.label_count * self.font_size_pix 
+                return self.label_count * self.font_size_pix
 
         def add_inst(self, instr):
                 """
