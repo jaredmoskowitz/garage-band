@@ -9,7 +9,8 @@ COMP 50: Concurrent Programming
 This program plays the given instrument tablature concurrently
 
 """
-import pyglet, sys, threading, time, Queue, random
+import pyglet, sys, threading, time, Queue, random, window
+from window import GarageBand, Inst
 from threading import Semaphore
 from pyglet import media
 from pyglet.window import key
@@ -67,10 +68,15 @@ def main(args):
         print usage_string
         exit(0)
 
-
     sources, tabs = read_input(args[1])
     instruments = create_instruments(sources, tabs)
-    play()
+
+    window = GarageBand(func=write_note)
+    window.add_instruments(instruments)
+
+    thread = threading.Thread(target = play, args = [])
+    thread.start()
+    pyglet.app.run()
 
 def read_input(filepath):
     """
@@ -84,11 +90,10 @@ def read_input(filepath):
     with open(filepath) as f:
         for line in f:
             temp = line.strip().split(" ")
-            print temp
             sources.append(temp[0])
             string = temp[1].replace('|', '')
             music_length = len(string) if len(string) > music_length else music_length
-            tabs.append(temp[1].replace('|', ''))
+            tabs.append(string)
 
     # make all intruments same length
     for tab in tabs:
@@ -134,13 +139,11 @@ def play():
     global active_instrument_count, instruments, barrier
     note_index = 0
     active_instrument_count = len(instruments)
-
     while note_index < music_length : # play until no one needs no more music
         barrier = Barrier(active_instrument_count)
         queue_next_sounds(note_index)
         asynchonrously_play_next_note()
         write_music(note_index)
-        print note_index
 
         note_index += 1 # iterate through the notes
         output()
@@ -168,7 +171,7 @@ def asynchonrously_play_next_note():
 
 def write_music(note_index):
     global instruments
-    write_note(instruments[2], random.randint(1, 9))
+    #write_note(instruments[2], random.randint(1, 9))
 
     while(not write_queue.empty()):
         (instrument, pitch) = write_queue.get()

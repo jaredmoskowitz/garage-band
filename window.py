@@ -33,6 +33,8 @@ class GarageBand(pyglet.window.Window):
                 self.schedule = pyglet.clock.schedule_interval(
                                 func = self.update,
                                 interval=1/60.)
+                self.instruments = list()
+                self.current_index = 0
 
         def on_draw(self):
                 """
@@ -47,7 +49,14 @@ class GarageBand(pyglet.window.Window):
 
         def on_key_release(self, symbol, modifiers):
                 #if checking key might need to be here
-                self.func(pyglet.window.key.symbol_string(symbol))
+                string = pyglet.window.key.symbol_string(symbol).strip('_')
+
+                if string.isdigit():
+                    self.func(self.instruments[self.current_index], float(string))
+                elif string == "DOWN":
+                    self.current_index = self.current_index - 1
+                elif string == "UP":
+                    self.current_index = (self.current_index + 1)%len(self.instruments)
 
         def update(self, interval):
                 """
@@ -64,7 +73,7 @@ class GarageBand(pyglet.window.Window):
         def __inst_spot(self):
                 return self.label_count * self.font_size_pix
 
-        def add_inst(self, instr):
+        def add_instrument(self, instr):
                 """
                 Add an instrument to the window
                 """
@@ -75,6 +84,11 @@ class GarageBand(pyglet.window.Window):
                                               x=10,
                                               y=self.height-self.__inst_spot())
                 self.label.append(new_label)
+                self.instruments.append(instrument)
+
+        def add_instruments(self, instruments):
+                for instrument in instruments:
+                        self.instruments.append(instrument)
 
 if __name__ == "__main__":
         window = GarageBand(func=lambda n: n)
