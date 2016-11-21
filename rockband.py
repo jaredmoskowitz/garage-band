@@ -17,11 +17,6 @@ from pyglet.window import key
 from pyglet.window import mouse
 
 
-instruments = []
-active_instrument_count = 0 # # of instruments planning to play their next note
-barrier = None
-write_queue = Queue.Queue()
-music_length = 0
 
 class Instrument:
     """
@@ -57,6 +52,135 @@ class Barrier:
         self.barrier.acquire()
         self.barrier.release()
 
+class Player:
+    def __init__(self, instruments):
+        self.instruments = instruments
+        self.active_instrument_count = 0
+        self.barrier = None
+        self.write_queue = Queue.Queue()
+        self.music_length = 0 if len(instruments) == 0 else len(instruments[0].tab)
+        self.paused = Semaphore(1)
+        self.is_paused = False
+
+
+    def queue_next_sounds(self, note_i):
+        """
+        Change the pitch and volume of the instruments to set up playing for
+        the next note
+        """
+        for instr in self.instruments:
+            if instr.tab[note_i].isdigit():
+                instr.player.pitch = self.shift_pitch(float(instr.tab[note_i]))
+                instr.player.volume = 1.0
+            else:
+                # instrument isn't supposed to play the next note, so silence it
+                instr.player.volume = 0.0
+
+    def shift_pitch(self, note):
+        """
+        Change the pitch from the nominal pitch
+        NOTE: this only works on pitche shifts 0-9
+        """
+        return 2**(note/12)
+
+    def play(self):
+        """
+        use all the instruments concurrently to play the music in harmony
+        """
+        global active_instrument_count, instruments, barrier
+        note_index = 0
+        self.active_instrument_count = len(self.instruments)
+        while note_index < music_length : # play until no one needs no more music
+            self.paused.acquire()
+            self.paused.release()
+            self.barrier = Barrier(self.active_instrument_count)
+            self.queue_next_sounds(note_index)
+            self.asynchonrously_play_next_note()
+            self.write_music(note_index)
+
+            note_index += 1 # iterate through the notes
+            self.output()
+
+        self.play() # loop
+
+    def asynchonrously_play_next_note(self):
+        """
+            Call the instruments so they all play their next note at the same time
+        """
+        threads = list()
+        for instrument in self.instruments:
+            threads.append(
+                threading.Thread(target = self.play_sound, args = [instrument]))
+            # else: these would be the instruments that have reached the end of
+            # their music tab
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        for instrument in self.instruments:
+            instrument.player.seek(0.0)
+
+    def write_music(self, note_index):
+
+        while(not self.write_queue.empty()):
+            (instrument, pitch) = self.write_queue.get()
+            instrument.player.pitch = self.shift_pitch(pitch)
+            tab = list(instrument.tab)
+            tab[note_index] = str(int(pitch))
+            instrument.tab = ''.join(tab)
+
+    def play_sound(self, instrument):
+        """
+        play sound for instrument in sync with all other threads running this
+        function
+        """
+        self.barrier.wait()
+        instrument.player.play()
+        time.sleep(0.15)
+
+    def pause(self):
+        """
+        Pause the music until resume is pushed
+        """
+        self.is_paused = True
+        self.paused.acquire()
+
+    def resume(self):
+        """
+        Play the music if already paused.
+        If already resumed then no action will be taken
+        """
+        self.is_paused = False
+        self.paused.release()
+
+    def write_note(self, instrument, pitch):
+        """
+        Changes given instrument to given pitch for current index
+        in tab
+        """
+        self.write_queue.put((instrument, pitch))
+
+    def stop(self):
+        """
+        Stops the music.
+        """
+        return None
+
+    def save(self, filename):
+        """
+        saves current tab to text file in given filename
+        """
+        return None
+
+    def get_sheet_music(self):
+        sheet = ""
+        for instrument in self.instruments:
+            sheet += str(instrument) + "\n"
+        return sheet
+
+    def output(self):
+        print self.get_sheet_music()
 
 def main(args):
     global instruments
@@ -71,10 +195,16 @@ def main(args):
     sources, tabs = read_input(args[1])
     instruments = create_instruments(sources, tabs)
 
-    window = GarageBand(func=write_note)
-    window.add_instruments(instruments)
+    player = Player(instruments)
 
-    thread = threading.Thread(target = play, args = [])
+    window = GarageBand(func=player.write_note)
+    window.add_instruments(instruments)
+    window.add_player(player)
+
+    def play_main(p):
+        p.play()
+
+    thread = threading.Thread(target = play_main, args = [player])
     thread.start()
     pyglet.app.run()
 
@@ -111,126 +241,6 @@ def create_instruments(sources, tabs):
         parts.append(Instrument(source, tabs[i]))
     return parts
 
-def queue_next_sounds(note_i):
-    """
-    Change the pitch and volume of the instruments to set up playing for
-    the next note
-    """
-    global instruments, active_instrument_count
-    for instr in instruments:
-        if instr.tab[note_i].isdigit():
-            instr.player.pitch = shift_pitch(float(instr.tab[note_i]))
-            instr.player.volume = 1.0
-        else:
-            # instrument isn't supposed to play the next note, so silence it
-            instr.player.volume = 0.0
-
-def shift_pitch(note):
-    """
-    Change the pitch from the nominal pitch
-    NOTE: this only works on pitche shifts 0-9
-    """
-    return 2**(note/12)
-
-def play():
-    """
-    use all the instruments concurrently to play the music in harmony
-    """
-    global active_instrument_count, instruments, barrier
-    note_index = 0
-    active_instrument_count = len(instruments)
-    while note_index < music_length : # play until no one needs no more music
-        barrier = Barrier(active_instrument_count)
-        queue_next_sounds(note_index)
-        asynchonrously_play_next_note()
-        write_music(note_index)
-
-        note_index += 1 # iterate through the notes
-        output()
-
-    play() # loop
-
-def asynchonrously_play_next_note():
-    """
-        Call the instruments so they all play their next note at the same time
-    """
-    global instruments, write_queue
-    threads = list()
-    for instrument in instruments:
-        threads.append(
-            threading.Thread(target = play_sound, args = [instrument]))
-        # else: these would be the instruments that have reached the end of
-        # their music tab
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-
-    for instrument in instruments:
-        instrument.player.seek(0.0)
-
-def write_music(note_index):
-    global instruments
-    #write_note(instruments[2], random.randint(1, 9))
-
-    while(not write_queue.empty()):
-        (instrument, pitch) = write_queue.get()
-        instrument.player.pitch = shift_pitch(pitch)
-        tab = list(instrument.tab)
-        tab[note_index] = str(int(pitch))
-        instrument.tab = ''.join(tab)
-
-def play_sound(instrument):
-    """
-    play sound for instrument in sync with all other threads running this
-    function
-    """
-    global instruments, barrier
-    barrier.wait()
-    instrument.player.play()
-    time.sleep(0.15)
-
-def pause():
-    """
-    Pause the music until resume is pushed
-    """
-    return None
-
-def resume():
-    """
-    Play the music if already paused.
-    If already resumed then no action will be taken
-    """
-    return None
-
-def write_note(instrument, pitch):
-    """
-    Changes given instrument to given pitch for current index
-    in tab
-    """
-    global write_queue
-    write_queue.put((instrument, pitch))
-
-def stop():
-    """
-    Stops the music.
-    """
-    return None
-
-def save(filename):
-    """
-    saves current tab to text file in given filename
-    """
-    return None
-
-def get_sheet_music():
-    sheet = ""
-    for instrument in instruments:
-        sheet += str(instrument) + "\n"
-    return sheet
-
-def output():
-    print get_sheet_music()
 
 if __name__ == '__main__':
     main(sys.argv)

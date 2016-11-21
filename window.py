@@ -35,6 +35,7 @@ class GarageBand(pyglet.window.Window):
                                 interval=1/60.)
                 self.instruments = list()
                 self.current_index = 0
+                self.player = None
 
         def on_draw(self):
                 """
@@ -54,9 +55,15 @@ class GarageBand(pyglet.window.Window):
                 if string.isdigit():
                     self.func(self.instruments[self.current_index], float(string))
                 elif string == "DOWN":
-                    self.current_index = self.current_index - 1
-                elif string == "UP":
                     self.current_index = (self.current_index + 1)%len(self.instruments)
+                elif string == "UP":
+                    self.current_index = self.current_index - 1
+                elif string == "SPACE":
+                    if self.player.is_paused:
+                        self.player.resume()
+                    else:
+                        self.player.pause()
+
 
         def update(self, interval):
                 """
@@ -78,17 +85,20 @@ class GarageBand(pyglet.window.Window):
                 Add an instrument to the window
                 """
                 self.label_count += 1
-                new_label = pyglet.text.Label(instr.tostring(),
+                new_label = pyglet.text.Label(str(instr),
                                               font_name = 'Times New Roman',
                                               font_size = 16,
                                               x=10,
                                               y=self.height-self.__inst_spot())
                 self.label.append(new_label)
-                self.instruments.append(instrument)
+                self.instruments.append(instr)
 
         def add_instruments(self, instruments):
                 for instrument in instruments:
-                        self.instruments.append(instrument)
+                        self.add_instrument(instrument)
+
+        def add_player(self, player):
+            self.player = player
 
 if __name__ == "__main__":
         window = GarageBand(func=lambda n: n)
