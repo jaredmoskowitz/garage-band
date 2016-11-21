@@ -10,7 +10,7 @@ This program plays the given instrument tablature concurrently
 
 """
 import pyglet, sys, threading, time, Queue, random, window
-from window import GarageBand, Inst
+from window import GarageBandView, Inst
 from threading import Semaphore
 from pyglet import media
 from pyglet.window import key
@@ -62,6 +62,7 @@ class Player:
         self.paused = Semaphore(1)
         self.is_paused = False
         self.is_stopped = False
+        self.dirty = False
 
 
     def queue_next_sounds(self, note_i):
@@ -135,6 +136,7 @@ class Player:
             tab = list(instrument.tab)
             tab[note_index] = str(int(pitch))
             instrument.tab = ''.join(tab)
+            self.dirty = True
 
     def play_sound(self, instrument):
         """
@@ -205,7 +207,7 @@ def main(args):
 
     player = Player(instruments)
 
-    window = GarageBand(player)
+    window = GarageBandView(player)
 
     def play_main(p):
         p.play()

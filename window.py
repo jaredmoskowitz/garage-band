@@ -8,7 +8,7 @@ class Inst:
         def tostring(self):
                 return self.source + " " + self.tab
 
-class GarageBand(pyglet.window.Window):
+class GarageBandView(pyglet.window.Window):
         """
         A class that defines the UI window for the user
         """
@@ -28,7 +28,7 @@ class GarageBand(pyglet.window.Window):
                                                anchor_y='center')]
 
                 self.label_count = 0
-                self.font_size_pix = 22
+                self.font_size_pix = 16
                 self.schedule = pyglet.clock.schedule_interval(
                                 func = self.update,
                                 interval=1/60.)
@@ -72,7 +72,11 @@ class GarageBand(pyglet.window.Window):
                 """
                 Necessary function for the window to redraw itself
                 """
-                pass
+                if (self.player.dirty):
+                    self.label[1:] = []
+                    self.label_count = 0
+                    self.add_instruments(self.player.instruments)
+                    self.player.dirty = False
 
         def __inst_spot(self):
                 return self.label_count * self.font_size_pix
@@ -84,7 +88,7 @@ class GarageBand(pyglet.window.Window):
                 self.label_count += 1
                 new_label = pyglet.text.Label(str(instr),
                                               font_name = 'Times New Roman',
-                                              font_size = 16,
+                                              font_size = 12,
                                               x=10,
                                               y=self.height-self.__inst_spot())
                 self.label.append(new_label)
