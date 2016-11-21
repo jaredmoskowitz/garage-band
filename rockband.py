@@ -61,6 +61,7 @@ class Player:
         self.music_length = 0 if len(instruments) == 0 else len(instruments[0].tab)
         self.paused = Semaphore(1)
         self.is_paused = False
+        self.is_stopped = False
 
 
     def queue_next_sounds(self, note_i):
@@ -88,11 +89,16 @@ class Player:
         use all the instruments concurrently to play the music in harmony
         """
         global active_instrument_count, instruments, barrier
+        if self.is_stopped:
+            return
+
         note_index = 0
         self.active_instrument_count = len(self.instruments)
         while note_index < music_length : # play until no one needs no more music
+            if self.is_stopped:
+                return
             self.paused.acquire()
-            self.paused.release()
+            self.paused.release() #turnstile
             self.barrier = Barrier(self.active_instrument_count)
             self.queue_next_sounds(note_index)
             self.asynchonrously_play_next_note()
@@ -165,13 +171,15 @@ class Player:
         """
         Stops the music.
         """
-        return None
+        self.is_stopped = True
 
     def save(self, filename):
         """
         saves current tab to text file in given filename
         """
-        return None
+        f = open(filename,'w')
+        f.write(self.get_sheet_music()) # python will convert \n to os.linesep
+        f.close() # you can omit in most cases as the destructor will call it
 
     def get_sheet_music(self):
         sheet = ""
@@ -197,9 +205,7 @@ def main(args):
 
     player = Player(instruments)
 
-    window = GarageBand(func=player.write_note)
-    window.add_instruments(instruments)
-    window.add_player(player)
+    window = GarageBand(player)
 
     def play_main(p):
         p.play()

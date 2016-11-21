@@ -1,0 +1,6 @@
+./media/6th_String_E_64kb.wav xxxxxx3446325355325xxxxxxxxxxxxxxxxxxxxxxx
+./media/5th_String_A_64kb.wav xxxxxxxxxxxxxxxxxxxxxxx53535355253xxxxxxxx
+./media/4th_String_D_64kb.wav 8688xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx8x86886
+./media/3rd_String_G_64kb.wav xxxxxxxxxxx255255253552xxx6896xxxxxxxxxxxx
+./media/2nd_String_B_64kb.wav 5355x55x5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx35
+./media/1st_String_E_64kb.wav xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

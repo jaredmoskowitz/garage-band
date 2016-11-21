@@ -12,7 +12,7 @@ class GarageBand(pyglet.window.Window):
         """
         A class that defines the UI window for the user
         """
-        def __init__(self, func=None):
+        def __init__(self, player):
                 """
                 Sets up the window.  Also sets the initial label that will
                 be used and schedules the update method to fire every
@@ -29,13 +29,13 @@ class GarageBand(pyglet.window.Window):
 
                 self.label_count = 0
                 self.font_size_pix = 22
-                self.func = func
                 self.schedule = pyglet.clock.schedule_interval(
                                 func = self.update,
                                 interval=1/60.)
                 self.instruments = list()
                 self.current_index = 0
-                self.player = None
+                self.player = player
+                self.add_instruments(self.player.instruments)
 
         def on_draw(self):
                 """
@@ -50,12 +50,12 @@ class GarageBand(pyglet.window.Window):
 
         def on_key_release(self, symbol, modifiers):
                 #if checking key might need to be here
-                string = pyglet.window.key.symbol_string(symbol).strip('_')
+                string = pyglet.window.key.symbol_string(symbol).strip('_').upper()
 
                 if string.isdigit():
-                    self.func(self.instruments[self.current_index], float(string))
+                    self.player.write_note(self.player.instruments[self.current_index], float(string))
                 elif string == "DOWN":
-                    self.current_index = (self.current_index + 1)%len(self.instruments)
+                    self.current_index = (self.current_index + 1)%len(self.player.instruments)
                 elif string == "UP":
                     self.current_index = self.current_index - 1
                 elif string == "SPACE":
@@ -63,19 +63,16 @@ class GarageBand(pyglet.window.Window):
                         self.player.resume()
                     else:
                         self.player.pause()
-
+                elif string == "T":
+                    self.player.stop()
+                elif string == "S":
+                    self.player.save("newmusic.txt")
 
         def update(self, interval):
                 """
                 Necessary function for the window to redraw itself
                 """
                 pass
-
-        def set_func(self, func):
-                """
-                Set the function of the window
-                """
-                self.func = func
 
         def __inst_spot(self):
                 return self.label_count * self.font_size_pix
@@ -91,14 +88,10 @@ class GarageBand(pyglet.window.Window):
                                               x=10,
                                               y=self.height-self.__inst_spot())
                 self.label.append(new_label)
-                self.instruments.append(instr)
 
         def add_instruments(self, instruments):
                 for instrument in instruments:
                         self.add_instrument(instrument)
-
-        def add_player(self, player):
-            self.player = player
 
 if __name__ == "__main__":
         window = GarageBand(func=lambda n: n)
