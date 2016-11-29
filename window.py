@@ -36,6 +36,7 @@ class GarageBandView(pyglet.window.Window):
                 self.current_index = 0
                 self.player = player
                 self.add_instruments(self.player.instruments)
+                #self.save = SaveWindow(player)
 
         def on_draw(self):
                 """
@@ -96,11 +97,3 @@ class GarageBandView(pyglet.window.Window):
         def add_instruments(self, instruments):
                 for instrument in instruments:
                         self.add_instrument(instrument)
-
-if __name__ == "__main__":
-        window = GarageBand(func=lambda n: n)
-        inst = Inst("Source1", "Tab1")
-        inst2 = Inst("Source2", "Tab2")
-        window.add_inst(inst)
-        window.add_inst(inst2)
-        pyglet.app.run()
