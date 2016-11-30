@@ -1,4 +1,5 @@
-import pyglet
+import pyglet, threading
+from Tkinter import *
 
 #upload with button click
 class Inst:
@@ -19,14 +20,14 @@ class GarageBandView(pyglet.window.Window):
                 60th of a second
                 """
                 pyglet.window.Window.__init__(self, width=500, height=500)
-                self.label = [pyglet.text.Label('Keyboard instructions',
+                self.origlabel = pyglet.text.Label('Keyboard instructions',
                                                font_name='Times New Roman',
                                                font_size=24,
                                                x=self.width//2,
                                                y=20,
                                                anchor_x='center',
-                                               anchor_y='center')]
-
+                                               anchor_y='center')
+                self.label = [self.origlabel]
                 self.label_count = 0
                 self.font_size_pix = 16
                 self.schedule = pyglet.clock.schedule_interval(
@@ -36,7 +37,6 @@ class GarageBandView(pyglet.window.Window):
                 self.current_index = 0
                 self.player = player
                 self.add_instruments(self.player.instruments)
-                #self.save = SaveWindow(player)
 
         def on_draw(self):
                 """
@@ -50,7 +50,6 @@ class GarageBandView(pyglet.window.Window):
                 pass
 
         def on_key_release(self, symbol, modifiers):
-                #if checking key might need to be here
                 string = pyglet.window.key.symbol_string(symbol).strip('_').upper()
 
                 if string.isdigit():
@@ -67,7 +66,18 @@ class GarageBandView(pyglet.window.Window):
                 elif string == "T":
                     self.player.stop()
                 elif string == "S":
-                    self.player.save("newmusic.txt")
+                    #Accomplishes save but if paused it will not restart
+                    master = Tk()
+                    e = Entry(master)
+                    e.pack()
+                    e.focus_set()
+                    def callback():
+                            self.player.save(e.get())
+                            master.destroy()
+                    b = Button(master, text = 'Save', width = 10, 
+                               command = callback)
+                    b.pack()
+                    mainloop()
 
         def update(self, interval):
                 """
@@ -81,7 +91,7 @@ class GarageBandView(pyglet.window.Window):
 
         def __inst_spot(self):
                 return self.label_count * self.font_size_pix
-
+        
         def add_instrument(self, instr):
                 """
                 Add an instrument to the window
@@ -97,3 +107,5 @@ class GarageBandView(pyglet.window.Window):
         def add_instruments(self, instruments):
                 for instrument in instruments:
                         self.add_instrument(instrument)
+
+        
