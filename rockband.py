@@ -106,7 +106,7 @@ class Player:
             self.write_music(note_index)
 
             note_index += 1 # iterate through the notes
-            self.output()
+            #self.output()
 
         self.play() # loop
 
