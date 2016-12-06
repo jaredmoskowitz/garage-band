@@ -30,6 +30,9 @@ class Instrument:
         self.player.eos_action = media.Player.EOS_PAUSE
         self.player.queue(self.source)
 
+    def load_source(self):
+        self.player.queue(self.source)
+
     def __str__(self):
         return self.source_path + " " + self.tab
 
@@ -43,6 +46,7 @@ class Barrier:
         self.cap = n
         self.mutex = Semaphore(1)
         self.barrier = Semaphore(0)
+        self.note_index = 0
     def wait(self):
         self.mutex.acquire()
         self.count = self.count + 1
@@ -93,7 +97,7 @@ class Player:
         if self.is_stopped:
             return
 
-        note_index = 0
+        sellf.note_index = 0
         self.active_instrument_count = len(self.instruments)
         while note_index < music_length : # play until no one needs no more music
             if self.is_stopped:
@@ -104,8 +108,9 @@ class Player:
             self.write_music(note_index)
             self.paused.acquire()
             self.paused.release() #turnstile
-            note_index += 1 # iterate through the notes
-            self.output()
+            self.note_index += 1 # iterate through the notes
+
+            #self.output()
 
         self.play() # loop
 
@@ -124,26 +129,27 @@ class Player:
         for thread in threads:
             thread.join()
 
-        was_error = False
+#        was_error = False
         for instrument in self.instruments:
             try:
                 instrument.player.seek(0.0)
             except AttributeError:
+                print "GOT IN HERE"
+                instrument.load_source()
+                instrument.player.pause()
                 print "instrument: " + str(instrument)
                 print "instrument.player: " + str(instrument.player)
                 print "instrument.player.source: " + str(instrument.player.source)
-                was_error = True
-        if was_error:
-            exit(1)
+#                was_error = True
+#        if was_error:
+#            exit(1)
 
     def write_music(self, note_index):
         while(not self.write_queue.empty()):
             (instrument, pitch) = self.write_queue.get()
-            instrument.player.pitch = self.shift_pitch(pitch)
             tab = list(instrument.tab)
             tab[note_index] = str(int(pitch))
             instrument.tab = ''.join(tab)
-            print instrument.tab
             self.dirty = True
 
     def play_sound(self, instrument):
@@ -176,6 +182,12 @@ class Player:
         in tab
         """
         self.write_queue.put((instrument, pitch))
+
+    def move_right(self):
+        return
+
+    def move_left(self):
+        return
 
     def stop(self):
         """
@@ -219,7 +231,6 @@ def main(args):
 
     def play_main(p):
         p.play()
-
     thread = threading.Thread(target = play_main, args = [player])
     thread.start()
     pyglet.app.run()
