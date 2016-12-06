@@ -48,14 +48,19 @@ class GarageBandView(pyglet.window.Window):
                         label.draw()
 
         def on_key_press(self, symbol, modifiers):
+                #Check to see if the user hit save.  If yes, handle the user
+                #backspacing the filename and hitting enter to complete 
+                #the save
                 if self.saveEnabled:
                     if symbol == pyglet.window.key.ENTER:
                         self.player.save(self.savetext + '.txt')
+                        #Switch the labels back to pointing at the ones 
+                        #before save was enabled
                         self.savetext = ''
-                        print(self.origlabels)
                         self.label[0:] = self.origlabels
                         self.saveEnabled = False
                     elif symbol == pyglet.window.key.BACKSPACE:
+                        #Remove one character from the save filename
                         self.savetext = self.savetext[:-1]
                         self.label[1].text = self.savetext
 
@@ -63,22 +68,26 @@ class GarageBandView(pyglet.window.Window):
                 string = pyglet.window.key.symbol_string(symbol).strip('_').upper()
 
                 if string.isdigit():
+                    #Changes the value of the current note
                     self.player.write_note(self.player.instruments[self.current_index], float(string))
                 elif string == "DOWN":
+                    #Moves the "cursor" down one instrument
                     self.current_index = (self.current_index + 1)%len(self.player.instruments)
                 elif string == "UP":
-                    if self.current_index == 0:
-                        self.current_index = len(self.player.instruments) - 1
-                    else:
-                        self.current_index -= 1
+                    #Moves the "cursor" up one instrument
+                    self.current_index = self.current_index - 1
                 elif string == "SPACE":
+                    #Pauses or resumes the music
                     if self.player.is_paused:
                         self.player.resume()
                     else:
                         self.player.pause()
                 elif string == "T":
+                    #Stops the music
                     self.player.stop()
                 elif string == "S":
+                    #Changes the labels to show the save UI to the user
+                    #and lets the program know that saving is occuring
                     if self.saveEnabled == False:
                         self.origlabels[0:] = self.label
                         self.label[2:] = []
@@ -93,9 +102,11 @@ class GarageBandView(pyglet.window.Window):
                                                       x=50,
                                                       y=self.height//2 - 22)
                         self.saveEnabled = True
-                    #self.player.save('newmusic.txt')
 
         def on_text(self, text):
+            #Checks to see if the user has hit save, if yes then adds 
+            #whatever text is typed into the label that is showing the 
+            #user's filename
             if self.saveEnabled:
                 self.savetext += text
                 self.label[1].text = self.savetext
@@ -104,6 +115,9 @@ class GarageBandView(pyglet.window.Window):
                 """
                 Necessary function for the window to redraw itself
                 """
+                #Checks to see if the labels need to be updated by looking
+                #at the player's dirty variable.  If yes, removes all 
+                #instruments and re-adds them all
                 if (self.player.dirty):
                     self.label[1:] = []
                     self.label_count = 0
@@ -112,12 +126,16 @@ class GarageBandView(pyglet.window.Window):
 
 
         def __inst_spot(self):
+                #The value that the next added instrument should have in its
+                #y value
                 return self.label_count * self.font_size_pix
 
         def add_instrument(self, instr):
                 """
                 Add an instrument to the window
                 """
+                #Creates new label for instrument and appends it to the 
+                #label list
                 self.label_count += 1
                 new_label = pyglet.text.Label(str(instr),
                                               font_name = 'Times New Roman',
@@ -127,5 +145,8 @@ class GarageBandView(pyglet.window.Window):
                 self.label.append(new_label)
 
         def add_instruments(self, instruments):
+                """
+                Adds a list of instruments
+                """
                 for instrument in instruments:
                         self.add_instrument(instrument)
