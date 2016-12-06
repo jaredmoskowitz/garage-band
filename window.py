@@ -33,7 +33,6 @@ class GarageBandView(pyglet.window.Window):
                 self.schedule = pyglet.clock.schedule_interval(
                                 func = self.update,
                                 interval=1/60.)
-                self.instruments = list()
                 self.current_index = 0
                 self.player = player
                 self.add_instruments(self.player.instruments)
@@ -68,7 +67,10 @@ class GarageBandView(pyglet.window.Window):
                 elif string == "DOWN":
                     self.current_index = (self.current_index + 1)%len(self.player.instruments)
                 elif string == "UP":
-                    self.current_index = self.current_index - 1
+                    if self.current_index == 0:
+                        self.current_index = len(self.player.instruments) - 1
+                    else:
+                        self.current_index -= 1
                 elif string == "SPACE":
                     if self.player.is_paused:
                         self.player.resume()
@@ -127,5 +129,3 @@ class GarageBandView(pyglet.window.Window):
         def add_instruments(self, instruments):
                 for instrument in instruments:
                         self.add_instrument(instrument)
-
-        
