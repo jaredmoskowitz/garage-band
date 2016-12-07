@@ -16,6 +16,8 @@ from pyglet import media
 from pyglet.window import key
 from pyglet.window import mouse
 
+thread = None
+
 
 
 class Instrument:
@@ -27,7 +29,7 @@ class Instrument:
         self.source = media.load(source_path, streaming=False)
         self.tab = tab
         self.player = media.Player()
-        self.player.eos_action = media.Player.EOS_LOOP
+        self.player.eos_action = media.Player.EOS_LOOP #TODO check this out
         self.player.queue(self.source)
 
     def load_source(self):
@@ -68,8 +70,6 @@ class Player:
         self.is_paused = False
         self.is_stopped = False
         self.dirty = False
-        self.note_index = 0
-        self.compound_note_index = 0
 
 
     def queue_next_sounds(self, note_i):
@@ -233,8 +233,11 @@ class Player:
     def output(self):
         print self.get_sheet_music()
 
+    def quit(self):
+        exit(1)
+
 def main(args):
-    global instruments
+    global instruments, thread
 
     # check for correct input
     if len(args) > 2:
