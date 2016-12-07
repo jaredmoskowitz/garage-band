@@ -69,7 +69,7 @@ class Player:
         self.paused = Semaphore(1)
         self.is_paused = False
         self.is_stopped = False
-        self.dirty = False
+        self.should_update_label = False
         self.note_index = 0
         self.compound_note_index = 0
         self.is_quitting = False
@@ -155,7 +155,7 @@ class Player:
             tab = list(instrument.tab)
             tab[self.note_index] = str(int(pitch))
             instrument.tab = ''.join(tab)
-            self.dirty = True
+            self.should_update_label = True
 
     def perform_input_actions(self):
         while not self.action_queue.empty():

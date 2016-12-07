@@ -166,7 +166,7 @@ class GarageBandView(pyglet.window.Window):
         #Checks to see if the labels need to be updated by looking
         #at the player's dirty variable.  If yes, removes all
         #instruments and re-adds them all
-        if (self.player.dirty):
+        if (self.player.should_update_label):
             self.label[1:] = []
             self.label_count = 0
             self.add_instruments(self.player.instruments)
