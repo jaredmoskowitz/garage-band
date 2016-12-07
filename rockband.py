@@ -270,9 +270,11 @@ def read_input(filepath):
     tabs = list()
     with open(filepath) as f:
         for line in f:
+            print line
             temp = line.strip().split(" ")
             sources.append(temp[0])
             string = temp[1].replace('|', '')
+            print string
             music_length = len(string) if len(string) > music_length else music_length
             tabs.append(string)
 
