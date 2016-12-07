@@ -112,7 +112,6 @@ class Player:
             self.action_queue.put(self.write_music)
 
             self.perform_input_actions()
-            print "current_index: " + str(self.note_index)
             self.paused.acquire()
             self.paused.release() #turnstile
             self.note_index += 1 # iterate through the notes
