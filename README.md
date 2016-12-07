@@ -1,11 +1,10 @@
 # garage-band
-Musical project for Concurrent Programming class
+Musical project for Comp 50 CP: Concurrent Programming at Tufts University
 
-Files and Directors:
-/media        - directory containing the audio files specified in the music input
-              files (e.g. data.txt)
-*.txt         - music files that can be inputted into garageband.py
-window.py     - program that handles UI and user input. Given instance of
-                Player (from garageband.py)
-garageband.py - reads the music file, plays music, writes to music, outputs
-                saved music file
+Using Python threading, this program takes in a text file containing a 
+list of instruments and their associated tabs, represented as a string
+made up of numbers and 'rest' symbols (e.g. "xx3xx8xxx999xxx1").  After
+parsing, the program then allows the user to write new notes to the tab
+and to control the flow of the song: pausing, resuming, fast-forwarding, 
+ect.  With all that, the program offers a UI so that the user can easily
+interact with the program and begin to create their own music!
