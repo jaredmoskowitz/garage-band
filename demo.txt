@@ -1,6 +1,6 @@
-./media/6th_String_E_64kb.wav xxxxxxxxxxx242546xxxxxxxxxxxxxxxxxxxxxxxxx
-./media/5th_String_A_64kb.wav xxxxxxxxxxxxxxxxxxx5xx9x3x4xxxxxxxxxxxxxxx
-./media/4th_String_D_64kb.wav xxxxxxxxxxxxxxxxxxxxxxxxxxxxx24x718xxxxxxx
-./media/3rd_String_G_64kb.wav 23x414xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx13x1
-./media/2nd_String_B_64kb.wav xxxxxxx13x27x14xxxxxxxxxxxxxxxxxxxxxxxxxxx
-./media/1st_String_E_64kb.wav xxxxxxxxxxxxxxxx25747x2xxxxxxxxxxxxxxxxxxx
+./media/6th_String_E_64kb.wav xx12366x147x8xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+./media/5th_String_A_64kb.wav xxxxxxxxxxxxxxx2345x3772xxxxxxxxxxxxxxxxxx
+./media/4th_String_D_64kb.wav xxxxxxxxxxxxxxxxxxxxxxxxxx1xxx379x9xxxxxxx
+./media/3rd_String_G_64kb.wav 4xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx1xx23x
+./media/2nd_String_B_64kb.wav xxxxxxx2xxxxx2x7xxxxxxxxxxxxxxxxxxxxxxxxxx
+./media/1st_String_E_64kb.wav xxxxxxxxxxxxxxxxxx3457xx8xxxxxxxxxxxxxxxxx
