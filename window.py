@@ -140,6 +140,9 @@ class GarageBandView(pyglet.window.Window):
                                                       y=self.height//2 - 22,
                                                       color=self.colors['black'])
                         self.saveEnabled = True
+                elif string == "ESCAPE":
+                    self.player.quit()
+                    self.close()
 
         def on_text(self, text):
             #Checks to see if the user has hit save, if yes then adds 
