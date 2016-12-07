@@ -27,7 +27,7 @@ class Instrument:
         self.source = media.load(source_path, streaming=False)
         self.tab = tab
         self.player = media.Player()
-        self.player.eos_action = media.Player.EOS_PAUSE
+        self.player.eos_action = media.Player.EOS_LOOP
         self.player.queue(self.source)
 
     def load_source(self):
@@ -62,13 +62,12 @@ class Player:
         self.active_instrument_count = 0
         self.barrier = None
         self.write_queue = Queue.Queue()
+        self.action_queue = Queue.Queue()
         self.music_length = 0 if len(instruments) == 0 else len(instruments[0].tab)
         self.paused = Semaphore(1)
         self.is_paused = False
         self.is_stopped = False
         self.dirty = False
-        self.note_index = 0
-        self.compound_note_index = 0
 
 
     def queue_next_sounds(self, note_i):
@@ -91,7 +90,7 @@ class Player:
         """
         return 2**(note/12)
 
-    def play(self):
+    def play(self, start_index = 0):
         """
         use all the instruments concurrently to play the music in harmony
         """
@@ -99,7 +98,9 @@ class Player:
         if self.is_stopped:
             return
 
-        self.note_index = 0
+        self.note_index = start_index
+        self.compound_note_index = start_index
+
         self.active_instrument_count = len(self.instruments)
         while self.note_index < music_length : # play until no one needs no more music
             if self.is_stopped:
@@ -107,11 +108,13 @@ class Player:
             self.barrier = Barrier(self.active_instrument_count)
             self.queue_next_sounds(self.note_index)
             self.asynchonrously_play_next_note()
-            self.write_music(self.note_index)
+            self.action_queue.put(self.write_music)
+
+            self.perform_input_actions()
+            print "current_index: " + str(self.note_index)
             self.paused.acquire()
             self.paused.release() #turnstile
             self.note_index += 1 # iterate through the notes
-            self.compound_note_index += 1
 
             #self.output()
 
@@ -132,28 +135,25 @@ class Player:
         for thread in threads:
             thread.join()
 
-#        was_error = False
         for instrument in self.instruments:
             try:
                 instrument.player.seek(0.0)
             except AttributeError:
-                print "GOT IN HERE"
                 instrument.load_source()
-                instrument.player.pause()
-                print "instrument: " + str(instrument)
-                print "instrument.player: " + str(instrument.player)
-                print "instrument.player.source: " + str(instrument.player.source)
-#                was_error = True
-#        if was_error:
-#            exit(1)
+                instrument.player.volume = 1.0
 
-    def write_music(self, note_index):
+    def write_music(self):
         while(not self.write_queue.empty()):
             (instrument, pitch) = self.write_queue.get()
             tab = list(instrument.tab)
-            tab[note_index] = str(int(pitch))
+            tab[self.note_index] = str(int(pitch))
             instrument.tab = ''.join(tab)
             self.dirty = True
+
+    def perform_input_actions(self):
+        while not self.action_queue.empty():
+            callback = self.action_queue.get()
+            callback()
 
     def play_sound(self, instrument):
         """
@@ -187,10 +187,26 @@ class Player:
         self.write_queue.put((instrument, pitch))
 
     def move_right(self):
-        return
+        self.action_queue.put(self.right)
+
+    def right(self):
+        if index >= self.music_length - 1:
+            self.note_index = 0
+            self.compound_note_index = 0
+        else:
+            self.note_index = self.note_index + 1
+            self.compound_note_index = self.compound_note_index + 1
 
     def move_left(self):
-        return
+        self.action_queue.put(self.left)
+
+    def left(self):
+        if self.note_index > 0:
+            self.note_index = self.note_index - 1
+            self.compound_note_index = self.compound_note_index - 1
+        else:
+            self.note_index = self.music_length - 1
+            self.compound_note_index = self.music_length - 1
 
     def stop(self):
         """
