@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 """
-rockband.py
+garageband.py
 
-Jared Moskowitz
-10/18/16
+Jared Moskowitz and Nick Carlino
+12/07/16
 COMP 50: Concurrent Programming
 
-This program plays the given instrument tablature concurrently
+This program reads, plays, controls, writes, and outputs
+the given instrument tablature concurrently.
 
 """
 import pyglet, sys, threading, time, Queue, random, window
-from window import GarageBandView, Inst
+from window import GarageBandView
 from threading import Semaphore
 from pyglet import media
 from pyglet.window import key
@@ -29,7 +30,7 @@ class Instrument:
         self.source = media.load(source_path, streaming=False)
         self.tab = tab
         self.player = media.Player()
-        self.player.eos_action = media.Player.EOS_LOOP #TODO check this out
+        self.player.eos_action = media.Player.EOS_LOOP
         self.player.queue(self.source)
 
     def load_source(self):
@@ -40,9 +41,9 @@ class Instrument:
 
 class Barrier:
     """
-   Class implementation of a barrier anwser (accidently) obtained from
-   http://stackoverflow.com/questions/26622745/implementing-barrier-in-python2-7
-   """
+    Class implementation of a barrier anwser (accidently) obtained from
+    stackoverflow.com/questions/26622745/implementing-barrier-in-python2-7
+    """
     def __init__(self, n):
         self.count = 0
         self.cap = n
@@ -59,17 +60,25 @@ class Barrier:
         self.barrier.release()
 
 class Player:
+    """
+    Plays a group of instruments together. Furthermore, allows ability to
+    control music, write music, and save the new music to a file.
+    """
     def __init__(self, instruments):
         self.instruments = instruments
-        self.active_instrument_count = 0
         self.barrier = None
         self.write_queue = Queue.Queue()
         self.action_queue = Queue.Queue()
-        self.music_length = 0 if len(instruments) == 0 else len(instruments[0].tab)
+        self.music_length = \
+                        0 if len(instruments) == 0 else len(instruments[0].tab)
         self.paused = Semaphore(1)
         self.is_paused = False
-        self.is_stopped = False
+<<<<<<< HEAD
         self.dirty = False
+=======
+        self.is_stopped = False
+        self.should_update_label = False
+>>>>>>> 3aa0e646a6b045b821b49c06b33ce73084ef0736
         self.note_index = 0
         self.compound_note_index = 0
         self.is_quitting = False
@@ -85,7 +94,7 @@ class Player:
                 instr.player.pitch = self.shift_pitch(float(instr.tab[note_i]))
                 instr.player.volume = 1.0
             else:
-                # instrument isn't supposed to play the next note, so silence it
+                #instrument isn't supposed to play the next note, so silence it
                 instr.player.volume = 0.0
 
     def shift_pitch(self, note):
@@ -99,21 +108,19 @@ class Player:
         """
         use all the instruments concurrently to play the music in harmony
         """
-        global active_instrument_count, instruments, barrier
-        if self.is_stopped:
-            return
+        global instruments, barrier
 
         self.note_index = start_index
 
-        self.active_instrument_count = len(self.instruments)
-        while self.note_index < music_length : # play until no one needs no more music
-            if self.is_stopped:
-                return
-            self.barrier = Barrier(self.active_instrument_count)
+        instruments_count = len(self.instruments)
+
+        while self.note_index < music_length :
+            self.barrier = Barrier(instruments_count)
             self.queue_next_sounds(self.note_index)
             self.asynchonrously_play_next_note()
-            self.action_queue.put(self.write_music)
 
+           # perform actions user inputted while playing music at current index
+            self.action_queue.put(self.write_music_action)
             self.perform_input_actions()
 
             if self.is_quitting:
@@ -121,20 +128,22 @@ class Player:
 
             self.paused.acquire()
             self.paused.release() #turnstile
-            self.note_index += 1 # iterate through the notes
-            self.compound_note_index += 1
 
-            #self.output()
-        self.play() # loop
+            self.note_index += 1 # iterate through the notes
+            self.compound_note_index += 1 # used by window for scrolling
+                                          # larger UI on larger songs
+
+        self.play()
 
     def asynchonrously_play_next_note(self):
         """
-            Call the instruments so they all play their next note at the same time
+        Calls the instruments so they all play their next note at the same time
         """
         threads = list()
         for instrument in self.instruments:
             threads.append(
-                threading.Thread(target = self.play_sound, args = [instrument]))
+                threading.Thread(target = self.play_sound,
+                                 args = [instrument]))
             # else: these would be the instruments that have reached the end of
             # their music tab
         for thread in threads:
@@ -145,26 +154,32 @@ class Player:
         for instrument in self.instruments:
             try:
                 instrument.player.seek(0.0)
-            except AttributeError:
+            except AttributeError: # handles pyglet error where finishes source
                 instrument.load_source()
                 instrument.player.volume = 1.0
 
+<<<<<<< HEAD
+=======
     def write_music(self):
         while(not self.write_queue.empty()):
             (instrument, pitch) = self.write_queue.get()
             tab = list(instrument.tab)
             tab[self.note_index] = str(int(pitch))
             instrument.tab = ''.join(tab)
-            self.dirty = True
+            self.should_update_label = True
 
+>>>>>>> 3aa0e646a6b045b821b49c06b33ce73084ef0736
     def perform_input_actions(self):
+        """
+        executes input actions given by
+        """
         while not self.action_queue.empty():
             callback = self.action_queue.get()
             callback()
 
     def play_sound(self, instrument):
         """
-        play sound for instrument in sync with all other threads running this
+        plays sound for instrument in sync with all other threads running this
         function
         """
         self.barrier.wait()
@@ -173,14 +188,14 @@ class Player:
 
     def pause(self):
         """
-        Pause the music until resume is pushed
+        Pauses the music until resume is pushed
         """
         self.is_paused = True
         self.paused.acquire()
 
     def resume(self):
         """
-        Play the music if already paused.
+        Plays the music if already paused.
         If already resumed then no action will be taken
         """
         self.is_paused = False
@@ -188,16 +203,30 @@ class Player:
 
     def write_note(self, instrument, pitch):
         """
-        Changes given instrument to given pitch for current index
-        in tab
+        Queues instrument to change pitch at current note index
         """
         self.write_queue.put((instrument, pitch))
+
+    def write_music_action(self):
+        """
+        Changes the given instruments to given pitchs for current index
+        in tab
+        """
+        while(not self.write_queue.empty()):
+            (instrument, pitch) = self.write_queue.get()
+            tab = list(instrument.tab)
+            tab[self.note_index] = str(int(pitch))
+            instrument.tab = ''.join(tab)
+            self.dirty = True
 
     def move_right(self):
         self.action_queue.put(self.right_action)
 
     def right_action(self):
-        if index >= self.music_length - 1:
+        """
+        moves current note index to the right
+        """
+        if self.note_index >= self.music_length - 1:
             self.note_index = 0
             self.compound_note_index = 0
         else:
@@ -208,18 +237,15 @@ class Player:
         self.action_queue.put(self.left_action)
 
     def left_action(self):
+        """
+        moves current note index to the left
+        """
         if self.note_index > 0:
             self.note_index = self.note_index - 1
             self.compound_note_index = self.compound_note_index - 1
         else:
             self.note_index = self.music_length - 1
             self.compound_note_index = self.music_length - 1
-
-    def stop(self):
-        """
-        Stops the music.
-        """
-        self.is_stopped = True
 
     def save(self, filename):
         """
@@ -230,15 +256,18 @@ class Player:
         f.close() # you can omit in most cases as the destructor will call it
 
     def get_sheet_music(self):
+        """
+        returns the current music in the form of a string
+        """
         sheet = ""
         for instrument in self.instruments:
             sheet += str(instrument) + "\n"
         return sheet
 
-    def output(self):
-        print self.get_sheet_music()
-
     def quit(self):
+        """
+        Stops the music from playign and exits the program
+        """
         self.action_queue.put(self.quit_action)
 
     def quit_action(self):
@@ -254,6 +283,7 @@ def main(args):
         print usage_string
         exit(0)
 
+    # create instrument instances from input file
     sources, tabs = read_input(args[1])
     instruments = create_instruments(sources, tabs)
 
@@ -263,6 +293,8 @@ def main(args):
 
     def play_main(p):
         p.play()
+
+    # run Player and window on seperate threads
     thread = threading.Thread(target = play_main, args = [player])
     thread.start()
     pyglet.app.run()
@@ -281,7 +313,8 @@ def read_input(filepath):
             temp = line.strip().split(" ")
             sources.append(temp[0])
             string = temp[1].replace('|', '')
-            music_length = len(string) if len(string) > music_length else music_length
+            music_length = \
+                    len(string) if len(string) > music_length else music_length
             tabs.append(string)
 
     # make all intruments same length

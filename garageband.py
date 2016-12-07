@@ -73,7 +73,7 @@ class Player:
                         0 if len(instruments) == 0 else len(instruments[0].tab)
         self.paused = Semaphore(1)
         self.is_paused = False
-        self.dirty = False
+        self.should_update_label = False
         self.note_index = 0
         self.compound_note_index = 0
         self.is_quitting = False
