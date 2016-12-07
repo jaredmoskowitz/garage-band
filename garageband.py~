@@ -10,7 +10,7 @@ This program plays the given instrument tablature concurrently
 
 """
 import pyglet, sys, threading, time, Queue, random, window
-from window import GarageBandView
+from window import GarageBandView, Inst
 from threading import Semaphore
 from pyglet import media
 from pyglet.window import key

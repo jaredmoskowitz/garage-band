@@ -1,4 +1,11 @@
-import pyglet
+import pyglet, threading
+
+class Inst:
+        def __init__(self, source, tab):
+                self.source=source
+                self.tab=tab
+        def tostring(self):
+                return self.source + " " + self.tab
 
 class GarageBandView(pyglet.window.Window):
         """
