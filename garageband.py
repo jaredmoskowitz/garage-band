@@ -201,7 +201,7 @@ class Player:
             tab = list(instrument.tab)
             tab[self.note_index] = str(int(pitch))
             instrument.tab = ''.join(tab)
-            self.dirty = True
+            self.should_update_label = True
 
     def move_right(self):
         self.action_queue.put(self.right_action)

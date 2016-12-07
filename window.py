@@ -35,7 +35,7 @@ class GarageBandView(pyglet.window.Window):
                                         font_name = self.font_name,
                                         font_size = 12,
                                         width = 450,
-                                        x = 85,
+                                        x = 100,
                                         y = 70,
                                         anchor_x = self.instruction_anchor,
                                         anchor_y = self.instruction_anchor,
