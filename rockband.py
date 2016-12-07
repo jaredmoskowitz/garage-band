@@ -70,6 +70,8 @@ class Player:
         self.is_paused = False
         self.is_stopped = False
         self.dirty = False
+        self.note_index = 0
+        self.compound_note_index = 0
 
 
     def queue_next_sounds(self, note_i):
@@ -112,6 +114,7 @@ class Player:
             self.action_queue.put(self.write_music)
 
             self.perform_input_actions()
+            print "current_index: " + str(self.note_index)
             self.paused.acquire()
             self.paused.release() #turnstile
             self.note_index += 1 # iterate through the notes
@@ -146,9 +149,13 @@ class Player:
     def write_music(self):
         while(not self.write_queue.empty()):
             (instrument, pitch) = self.write_queue.get()
+            print "tab PRE"
+            print instrument.tab
             tab = list(instrument.tab)
             tab[self.note_index] = str(int(pitch))
             instrument.tab = ''.join(tab)
+            print "tab POST"
+            print tab
             self.dirty = True
 
     def perform_input_actions(self):
@@ -269,11 +276,9 @@ def read_input(filepath):
     tabs = list()
     with open(filepath) as f:
         for line in f:
-            print line
             temp = line.strip().split(" ")
             sources.append(temp[0])
             string = temp[1].replace('|', '')
-            print string
             music_length = len(string) if len(string) > music_length else music_length
             tabs.append(string)
 
