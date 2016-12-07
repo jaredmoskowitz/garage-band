@@ -114,7 +114,6 @@ class Player:
             self.action_queue.put(self.write_music)
 
             self.perform_input_actions()
-            print "current_index: " + str(self.note_index)
             self.paused.acquire()
             self.paused.release() #turnstile
             self.note_index += 1 # iterate through the notes
@@ -149,13 +148,9 @@ class Player:
     def write_music(self):
         while(not self.write_queue.empty()):
             (instrument, pitch) = self.write_queue.get()
-            print "tab PRE"
-            print instrument.tab
             tab = list(instrument.tab)
             tab[self.note_index] = str(int(pitch))
             instrument.tab = ''.join(tab)
-            print "tab POST"
-            print tab
             self.dirty = True
 
     def perform_input_actions(self):
