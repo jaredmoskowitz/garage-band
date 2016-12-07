@@ -31,6 +31,7 @@ class GarageBandView(pyglet.window.Window):
                                     -left and right to change note
                                     -space to pause/resume
                                     -s to save the song
+                                    -escape to quit
                                     """
                 #The origin label.  Shows instructions
                 self.label = [pyglet.text.Label(self.instructions,
@@ -38,7 +39,7 @@ class GarageBandView(pyglet.window.Window):
                                                font_size=12,
                                                width=390,
                                                x=60,
-                                               y=50,
+                                               y=60,
                                                anchor_x='center',
                                                anchor_y='center',
                                                multiline=True,
@@ -82,7 +83,8 @@ class GarageBandView(pyglet.window.Window):
                 #the save
                 if self.saveEnabled:
                     if symbol == pyglet.window.key.ENTER:
-                        self.player.save(self.savetext + '.txt')
+                        text = self.savetext+'.txt'
+                        self.player.save(text)
                         #Switch the labels back to pointing at the ones 
                         #before save was enabled
                         self.savetext = ''
@@ -139,6 +141,9 @@ class GarageBandView(pyglet.window.Window):
                                                       y=self.height//2 - 22,
                                                       color=self.colors['black'])
                         self.saveEnabled = True
+                elif string == "ESCAPE":
+                    self.player.quit()
+                    self.close()
 
         def on_text(self, text):
             #Checks to see if the user has hit save, if yes then adds 
@@ -169,7 +174,8 @@ class GarageBandView(pyglet.window.Window):
                 #Makes sure it is not the first iteration, then checks to
                 #see if the tabs need to be redrawn
                 if not self.firstIter:
-                    self.__check_pos('right')
+                    if not self.saveEnabled:
+                        self.__check_pos('right')
 
         def __check_pos(self, direct):
             """
