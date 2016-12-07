@@ -27,7 +27,7 @@ class Instrument:
         self.source = media.load(source_path, streaming=False)
         self.tab = tab
         self.player = media.Player()
-        self.player.eos_action = media.Player.EOS_PAUSE
+        self.player.eos_action = media.Player.EOS_LOOP
         self.player.queue(self.source)
 
     def load_source(self):
@@ -89,7 +89,7 @@ class Player:
         """
         return 2**(note/12)
 
-    def play(self):
+    def play(self, start_index = 0):
         """
         use all the instruments concurrently to play the music in harmony
         """
@@ -97,15 +97,17 @@ class Player:
         if self.is_stopped:
             return
 
-        sellf.note_index = 0
+        self.note_index = start_index
         self.active_instrument_count = len(self.instruments)
-        while note_index < music_length : # play until no one needs no more music
+        while self.note_index < music_length : # play until no one needs no more music
             if self.is_stopped:
                 return
+            if self.is_paused:
+                return
             self.barrier = Barrier(self.active_instrument_count)
-            self.queue_next_sounds(note_index)
+            self.queue_next_sounds(self.note_index)
             self.asynchonrously_play_next_note()
-            self.write_music(note_index)
+            self.write_music(self.note_index)
             self.paused.acquire()
             self.paused.release() #turnstile
             self.note_index += 1 # iterate through the notes
@@ -136,7 +138,8 @@ class Player:
             except AttributeError:
                 print "GOT IN HERE"
                 instrument.load_source()
-                instrument.player.pause()
+                instrument.player.volume = 1.0
+                #instrument.player.pause()
                 print "instrument: " + str(instrument)
                 print "instrument.player: " + str(instrument.player)
                 print "instrument.player.source: " + str(instrument.player.source)
