@@ -72,6 +72,7 @@ class Player:
         self.dirty = False
         self.note_index = 0
         self.compound_note_index = 0
+        self.is_quitting = False
 
 
     def queue_next_sounds(self, note_i):
@@ -114,13 +115,16 @@ class Player:
             self.action_queue.put(self.write_music)
 
             self.perform_input_actions()
+
+            if self.is_quitting:
+                return
+
             self.paused.acquire()
             self.paused.release() #turnstile
             self.note_index += 1 # iterate through the notes
             self.compound_note_index += 1
 
             #self.output()
-
         self.play() # loop
 
     def asynchonrously_play_next_note(self):
@@ -190,9 +194,9 @@ class Player:
         self.write_queue.put((instrument, pitch))
 
     def move_right(self):
-        self.action_queue.put(self.right)
+        self.action_queue.put(self.right_action)
 
-    def right(self):
+    def right_action(self):
         if index >= self.music_length - 1:
             self.note_index = 0
             self.compound_note_index = 0
@@ -201,9 +205,9 @@ class Player:
             self.compound_note_index = self.compound_note_index + 1
 
     def move_left(self):
-        self.action_queue.put(self.left)
+        self.action_queue.put(self.left_action)
 
-    def left(self):
+    def left_action(self):
         if self.note_index > 0:
             self.note_index = self.note_index - 1
             self.compound_note_index = self.compound_note_index - 1
@@ -235,7 +239,10 @@ class Player:
         print self.get_sheet_music()
 
     def quit(self):
-        exit(1)
+        self.action_queue.put(self.quit_action)
+
+    def quit_action(self):
+        self.is_quitting = True
 
 def main(args):
     global instruments, thread
