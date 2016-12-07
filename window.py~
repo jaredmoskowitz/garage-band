@@ -1,4 +1,11 @@
-import pyglet
+import pyglet, threading
+
+class Inst:
+        def __init__(self, source, tab):
+                self.source=source
+                self.tab=tab
+        def tostring(self):
+                return self.source + " " + self.tab
 
 class GarageBandView(pyglet.window.Window):
         """
@@ -20,7 +27,7 @@ class GarageBandView(pyglet.window.Window):
                 #Keyboard instructions for the user
                 self.instructions = """
                                     -0-9 to write a note
-                                    -up and down to change instrument
+                                    -up and down to change instrument 
                                     -left and right to change note
                                     -space to pause/resume
                                     -s to save the song
@@ -72,13 +79,13 @@ class GarageBandView(pyglet.window.Window):
 
         def on_key_press(self, symbol, modifiers):
                 #Check to see if the user hit save.  If yes, handle the user
-                #backspacing the filename and hitting enter to complete
+                #backspacing the filename and hitting enter to complete 
                 #the save
                 if self.saveEnabled:
                     if symbol == pyglet.window.key.ENTER:
                         text = self.savetext+'.txt'
                         self.player.save(text)
-                        #Switch the labels back to pointing at the ones
+                        #Switch the labels back to pointing at the ones 
                         #before save was enabled
                         self.savetext = ''
                         self.label[0:] = self.origlabels
@@ -139,8 +146,8 @@ class GarageBandView(pyglet.window.Window):
                     self.close()
 
         def on_text(self, text):
-            #Checks to see if the user has hit save, if yes then adds
-            #whatever text is typed into the label that is showing the
+            #Checks to see if the user has hit save, if yes then adds 
+            #whatever text is typed into the label that is showing the 
             #user's filename
             if self.saveEnabled:
                 self.savetext += text
@@ -156,7 +163,7 @@ class GarageBandView(pyglet.window.Window):
                     self.firstIter = False
 
                 #Checks to see if the labels need to be updated by looking
-                #at the player's dirty variable.  If yes, removes all
+                #at the player's dirty variable.  If yes, removes all 
                 #instruments and re-adds them all
                 if (self.player.dirty):
                     self.label[1:] = []
@@ -172,7 +179,7 @@ class GarageBandView(pyglet.window.Window):
 
         def __check_pos(self, direct):
             """
-            Checks to see if the tabs need to be redrawn and calls redraw
+            Checks to see if the tabs need to be redrawn and calls redraw 
             functions if yes
             """
             for i in range(0, len(self.player.instruments)):
@@ -195,14 +202,14 @@ class GarageBandView(pyglet.window.Window):
                 self.label_count += 1
                 #Splits instrument on / part of path to separate it
                 inst_no_path = str(instr).split('/')
-                #The instrument and tab
+                #The instrument and tab 
                 temp = inst_no_path[-1]
                 #Splits the instrument and tab so that the tab can be parsed
                 instsplit = temp.split()
                 #The max size of the tab
                 x_length = self.max_tab_length - len(instsplit[0])
                 self.x_lengths.append(self.max_tab_length - len(instsplit[0]))
-                #Checks to see if the length of the tab is too large and
+                #Checks to see if the length of the tab is too large and 
                 #cuts it down if it is and stores the rest in the extra
                 #list
                 if len(instsplit[1]) > x_length:
@@ -262,3 +269,5 @@ class GarageBandView(pyglet.window.Window):
                 """
                 for instrument in instruments:
                         self.add_instrument(instrument)
+
+        
