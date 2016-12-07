@@ -197,7 +197,7 @@ class Player:
         self.action_queue.put(self.right_action)
 
     def right_action(self):
-        if index >= self.music_length - 1:
+        if self.note_index >= self.music_length - 1:
             self.note_index = 0
             self.compound_note_index = 0
         else:
