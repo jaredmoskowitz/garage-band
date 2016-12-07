@@ -31,6 +31,7 @@ class GarageBandView(pyglet.window.Window):
                                     -left and right to change note
                                     -space to pause/resume
                                     -s to save the song
+                                    -escape to quit
                                     """
                 #The origin label.  Shows instructions
                 self.label = [pyglet.text.Label(self.instructions,
@@ -38,7 +39,7 @@ class GarageBandView(pyglet.window.Window):
                                                font_size=12,
                                                width=390,
                                                x=60,
-                                               y=50,
+                                               y=60,
                                                anchor_x='center',
                                                anchor_y='center',
                                                multiline=True,
