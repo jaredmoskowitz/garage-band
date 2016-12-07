@@ -67,6 +67,8 @@ class Player:
         self.is_paused = False
         self.is_stopped = False
         self.dirty = False
+        self.note_index = 0
+        self.compound_note_index = 0
 
 
     def queue_next_sounds(self, note_i):
@@ -97,18 +99,19 @@ class Player:
         if self.is_stopped:
             return
 
-        sellf.note_index = 0
+        self.note_index = 0
         self.active_instrument_count = len(self.instruments)
-        while note_index < music_length : # play until no one needs no more music
+        while self.note_index < music_length : # play until no one needs no more music
             if self.is_stopped:
                 return
             self.barrier = Barrier(self.active_instrument_count)
-            self.queue_next_sounds(note_index)
+            self.queue_next_sounds(self.note_index)
             self.asynchonrously_play_next_note()
-            self.write_music(note_index)
+            self.write_music(self.note_index)
             self.paused.acquire()
             self.paused.release() #turnstile
             self.note_index += 1 # iterate through the notes
+            self.compound_note_index += 1
 
             #self.output()
 
