@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 """
-rockband.py
+garageband.py
 
-Jared Moskowitz
-10/18/16
+Jared Moskowitz and Nick Carlino
+12/07/16
 COMP 50: Concurrent Programming
 
 This program plays the given instrument tablature concurrently
 
 """
 import pyglet, sys, threading, time, Queue, random, window
-from window import GarageBandView, Inst
+from window import GarageBandView
 from threading import Semaphore
 from pyglet import media
 from pyglet.window import key
